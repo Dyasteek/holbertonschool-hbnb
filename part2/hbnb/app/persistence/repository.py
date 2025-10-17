@@ -2,7 +2,7 @@ class Repository:
     def __init__(self):
         self._storage = {}
 
-    def add(self, obj):
+    def create(self, obj):
         """Add an object to the repository"""
         self._storage[obj.id] = obj
 
