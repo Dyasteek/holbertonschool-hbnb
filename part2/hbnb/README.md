@@ -1,4 +1,30 @@
-V1.5 (Current)
+V1.6 (Current)
+- Complete REST API implementation:
+  - All CRUD endpoints for Users, Places, Reviews, Amenities, Locations
+  - Full validation and error handling
+
+- API Endpoints:
+  - Users: GET, POST, PUT, DELETE /api/v1/users/
+  - Places: GET, POST, PUT, DELETE /api/v1/places/
+  - Reviews: GET, POST, PUT, DELETE /api/v1/reviews/
+  - Amenities: GET, POST, PUT, DELETE /api/v1/amenities/
+  - Locations: GET, POST, PUT, DELETE /api/v1/locations/
+
+- Updated project structure:
+  - hbnb/app/models/ -> Python classes (models)
+  - hbnb/app/persistence/repository.py -> simple in-memory storage
+  - hbnb/app/services/facade.py -> business logic layer
+  - hbnb/app/api/v1/ -> REST API endpoints
+  - hbnb/app/__init__.py -> Flask app factory
+  - hbnb/run.py -> Flask app runner
+  - hbnb/.venv/ -> virtual environment
+
+- Notes
+  - Complete REST API with all CRUD operations
+  - Data persistence during app session
+  - Relationship validation (place-location, review-user, etc.)
+
+V1.5
 - Flask app working:
   - Basic Flask app with health endpoint (/health)
   - HBnBFacade service layer for business logic
@@ -43,4 +69,6 @@ How to run (with venv)
 
 Notes
 - No database, no ORM, no migrations
-- Next update: build Flask endpoints using these models
+- Complete REST API with all CRUD operations
+- Swagger documentation at /api/v1/
+- Data persists during app session (in-memory)
