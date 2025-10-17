@@ -1,14 +1,15 @@
 from .base_model import BaseModel
 
-class Amenity(BaseModel):
-    def __init__(self, name, description=""):
+class Location(BaseModel):
+    def __init__(self, address, city, country):
         super().__init__()
-        self.name = name
-        self.description = description
+        self.address = address
+        self.city = city
+        self.country = country
         self.places = []
 
     def add_place(self, place):
-        """Add a place that has this amenity"""
+        """Add a place to this location"""
         if place not in self.places:
             self.places.append(place)
 
@@ -16,7 +17,8 @@ class Amenity(BaseModel):
         """Convert the instance to a dictionary"""
         base_dict = super().to_dict()
         base_dict.update({
-            'name': self.name,
-            'description': self.description
+            'address': self.address,
+            'city': self.city,
+            'country': self.country
         })
         return base_dict
