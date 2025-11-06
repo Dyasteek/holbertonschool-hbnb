@@ -8,7 +8,7 @@ from .api.v1.amenities import api as amenities_ns
 from .api.v1.places import api as places_ns
 from .api.v1.reviews import api as reviews_ns
 from .api.v1.locations import api as locations_ns
-from ..config import config as config_map, Config as BaseConfig
+from config import config as config_map, Config as BaseConfig
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
