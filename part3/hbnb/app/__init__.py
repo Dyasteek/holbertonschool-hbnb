@@ -28,7 +28,7 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
         app.config.from_object(config_map.get('default'))
 
     # configuration key JWT
-    s
+    app.config["JWT_SECRET_KEY"] = app.config["SECRET_KEY"]
 
     # Extensions
     bcrypt.init_app(app)
