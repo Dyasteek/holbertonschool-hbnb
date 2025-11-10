@@ -35,6 +35,11 @@ class UserList(Resource):
         """Register a new user"""
         user_data = api.payload or {}
 
+        required_fields = ['first_name', 'last_name', 'email', 'password']
+        missing_fields = [field for field in required_fields if field not in user_data]
+        if missing_fields:
+            return {'error': 'Datos incompletos'}, 400
+
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
