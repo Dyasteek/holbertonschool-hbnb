@@ -37,7 +37,12 @@ class ReviewList(Resource):
     @jwt_required()
     def post(self):
         """Create a new review"""
-        review_data = api.payload
+        review_data = api.payload or {}
+
+        required_fields = ['title', 'text', 'rating', 'place_id']
+        missing_fields = [field for field in required_fields if field not in review_data]
+        if missing_fields:
+            return {'error': 'Datos incompletos'}, 400
 
         current_user_id = get_jwt_identity()
         user = facade.get_user(current_user_id)

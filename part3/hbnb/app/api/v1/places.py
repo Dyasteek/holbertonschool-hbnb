@@ -41,8 +41,13 @@ class PlaceList(Resource):
     @jwt_required()
     def post(self):
         """Create a new place"""
-        place_data = api.payload
+        place_data = api.payload or {}
         current_user_id = get_jwt_identity()
+
+        required_fields = ['title', 'description', 'price', 'max_guest', 'location_id']
+        missing_fields = [field for field in required_fields if field not in place_data]
+        if missing_fields:
+            return {'error': 'Datos incompletos'}, 400
 
         owner = facade.get_user(current_user_id)
         if not owner:
