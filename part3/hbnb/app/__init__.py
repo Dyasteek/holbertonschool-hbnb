@@ -36,7 +36,7 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
 
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API', doc='/api/v1/')
 
-    # Register all namespaces
+    # Namespaces
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
     api.add_namespace(places_ns, path='/api/v1/places')
@@ -45,7 +45,7 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
 
     app.facade = HBnBFacade()
 
-    # Basic health route (placeholder)
+    # Health
     @app.route('/health')
     def health():
         return 'Hola, bienvenido.'
