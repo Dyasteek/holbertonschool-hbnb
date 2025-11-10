@@ -13,7 +13,7 @@ class HBnBFacade:
         self.amenity_repo = Repository()
         self.location_repo = Repository()
 
-    # User methods
+    # User
     def create_user(self, user_data):
         user = User(**user_data)
         self.user_repo.create(user)
@@ -37,7 +37,7 @@ class HBnBFacade:
         """Get all users"""
         return self.user_repo.get_all()
 
-    # Place methods
+    # Place
     def create_place(self, place_data):
         place = Place(**place_data)
         self.place_repo.create(place)
@@ -55,7 +55,7 @@ class HBnBFacade:
     def get_all_places(self):
         return self.place_repo.get_all()
 
-    # Review methods
+    # Review
     def create_review(self, review_data):
         review = Review(**review_data)
         self.review_repo.create(review)
@@ -73,7 +73,7 @@ class HBnBFacade:
     def get_all_reviews(self):
         return self.review_repo.get_all()
 
-    # Amenity methods
+    # Amenity
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
         self.amenity_repo.create(amenity)
@@ -91,7 +91,7 @@ class HBnBFacade:
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
 
-    # Location methods
+    # Location
     def create_location(self, location_data):
         location = Location(**location_data)
         self.location_repo.create(location)

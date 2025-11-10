@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
-# Place model
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(required=True, description='Description of the place'),
@@ -34,8 +33,7 @@ class PlaceList(Resource):
     def post(self):
         """Create a new place"""
         place_data = api.payload
-        
-        # Get location and owner objects
+
         location = facade.get_location(place_data['location_id'])
         owner = facade.get_user(place_data['owner_id'])
         
@@ -44,7 +42,6 @@ class PlaceList(Resource):
         if not owner:
             return {'error': 'Owner not found'}, 400
         
-        # Create place with objects
         place_obj_data = {
             'title': place_data['title'],
             'description': place_data['description'],

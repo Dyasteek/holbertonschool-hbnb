@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('locations', description='Location operations')
 
-# Location model
 location_model = api.model('Location', {
     'address': fields.String(required=True, description='Address of the location'),
     'city': fields.String(required=True, description='City of the location'),

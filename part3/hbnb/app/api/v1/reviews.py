@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('reviews', description='Review operations')
 
-# Review model
 review_model = api.model('Review', {
     'title': fields.String(required=True, description='Title of the review'),
     'text': fields.String(required=True, description='Text content of the review'),
@@ -32,8 +31,7 @@ class ReviewList(Resource):
     def post(self):
         """Create a new review"""
         review_data = api.payload
-        
-        # Get place and user objects
+
         place = facade.get_place(review_data['place_id'])
         user = facade.get_user(review_data['user_id'])
         
@@ -42,7 +40,6 @@ class ReviewList(Resource):
         if not user:
             return {'error': 'User not found'}, 400
         
-        # Create review with objects
         review_obj_data = {
             'title': review_data['title'],
             'text': review_data['text'],
