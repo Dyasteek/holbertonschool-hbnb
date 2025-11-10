@@ -8,6 +8,7 @@ from .api.v1.amenities import api as amenities_ns
 from .api.v1.places import api as places_ns
 from .api.v1.reviews import api as reviews_ns
 from .api.v1.locations import api as locations_ns
+from .api.v1.auth import api as auth_ns
 from config import config as config_map, Config as BaseConfig
 
 bcrypt = Bcrypt()
@@ -42,6 +43,7 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
     api.add_namespace(places_ns, path='/api/v1/places')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(locations_ns, path='/api/v1/locations')
+    api.add_namespace(auth_ns, path='/api/v1/auth')
 
     app.facade = HBnBFacade()
 
