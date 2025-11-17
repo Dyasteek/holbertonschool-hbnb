@@ -69,4 +69,4 @@ Complete technical documentation that serves as a blueprint for the HBnB Evoluti
 
 ## Authors
 
-Nahuel Cabrera, Andrés del Rio
+Gamaliel Perez, Andrés del Rio
