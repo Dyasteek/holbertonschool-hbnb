@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from .services.facade import HBnBFacade
 from .api.v1.users import api as users_ns
 from .api.v1.amenities import api as amenities_ns
@@ -13,6 +14,7 @@ from config import config as config_map, Config as BaseConfig
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
+cors = CORS()
 
 def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Flask:
     app = Flask(__name__)
@@ -34,6 +36,7 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
     # Extensions
     bcrypt.init_app(app)
     jwt.init_app(app)
+    cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
 
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API', doc='/api/v1/')
 
