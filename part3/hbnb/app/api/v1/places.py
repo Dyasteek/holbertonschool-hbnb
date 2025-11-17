@@ -8,17 +8,17 @@ api = Namespace('places', description='Place operations')
 place_create_model = api.model('PlaceCreate', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(required=True, description='Description of the place'),
-    'price': fields.Integer(required=True, description='Price of the place'),
-    'max_guest': fields.Integer(required=True, description='Maximum number of guests'),
-    'location_id': fields.String(required=True, description='ID of the location')
+    'price': fields.Float(required=True, description='Price per night'),
+    'latitude': fields.Float(required=True, description='Latitude of the place'),
+    'longitude': fields.Float(required=True, description='Longitude of the place')
 })
 
 place_update_model = api.model('PlaceUpdate', {
     'title': fields.String(required=False, description='Title of the place'),
     'description': fields.String(required=False, description='Description of the place'),
-    'price': fields.Integer(required=False, description='Price of the place'),
-    'max_guest': fields.Integer(required=False, description='Maximum number of guests'),
-    'location_id': fields.String(required=False, description='ID of the location')
+    'price': fields.Float(required=False, description='Price per night'),
+    'latitude': fields.Float(required=False, description='Latitude of the place'),
+    'longitude': fields.Float(required=False, description='Longitude of the place')
 })
 
 @api.route('/')
@@ -31,9 +31,9 @@ class PlaceList(Resource):
                 'title': place.title, 
                 'description': place.description, 
                 'price': place.price, 
-                'max_guest': place.max_guest, 
-                'location_id': place.location.id if place.location else None, 
-                'owner_id': place.owner.id if place.owner else None} for place in places], 200
+                'latitude': place.latitude, 
+                'longitude': place.longitude,
+                'user_id': place.user_id} for place in places], 200
 
     @api.expect(place_create_model, validate=True)
     @api.response(201, 'Place successfully created')
@@ -44,39 +44,33 @@ class PlaceList(Resource):
         place_data = api.payload or {}
         current_user_id = get_jwt_identity()
 
-        required_fields = ['title', 'description', 'price', 'max_guest', 'location_id']
+        required_fields = ['title', 'description', 'price', 'latitude', 'longitude']
         missing_fields = [field for field in required_fields if field not in place_data]
         if missing_fields:
             return {'error': 'Datos incompletos'}, 400
 
-        owner = facade.get_user(current_user_id)
-        if not owner:
+        user = facade.get_user(current_user_id)
+        if not user:
             return {'error': 'User not found'}, 404
-
-        location = facade.get_location(place_data['location_id'])
-        if not location:
-            return {'error': 'Location not found'}, 400
 
         place_obj_data = {
             'title': place_data['title'],
             'description': place_data['description'],
             'price': place_data['price'],
-            'max_guest': place_data['max_guest'],
-            'location': location,
-            'owner': owner
+            'latitude': place_data['latitude'],
+            'longitude': place_data['longitude'],
+            'user_id': current_user_id
         }
 
         new_place = facade.create_place(place_obj_data)
-        owner.add_place(new_place)
-        location.add_place(new_place)
 
         return {'id': new_place.id, 
                 'title': new_place.title, 
                 'description': new_place.description, 
                 'price': new_place.price, 
-                'max_guest': new_place.max_guest, 
-                'location_id': new_place.location.id, 
-                'owner_id': new_place.owner.id}, 201
+                'latitude': new_place.latitude, 
+                'longitude': new_place.longitude,
+                'user_id': new_place.user_id}, 201
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
@@ -91,9 +85,9 @@ class PlaceResource(Resource):
                 'title': place.title, 
                 'description': place.description, 
                 'price': place.price, 
-                'max_guest': place.max_guest, 
-                'location_id': place.location.id if place.location else None, 
-                'owner_id': place.owner.id if place.owner else None}, 200
+                'latitude': place.latitude, 
+                'longitude': place.longitude,
+                'user_id': place.user_id}, 200
 
     @api.expect(place_update_model, validate=True)
     @api.response(200, 'Place successfully updated')
@@ -107,34 +101,21 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
 
         current_user_id = get_jwt_identity()
-        if not place.owner or place.owner.id != current_user_id:
+        if place.user_id != current_user_id:
             return {'error': 'Acción no autorizada'}, 403
 
         place_data = api.payload or {}
 
         update_fields = {}
-        allowed_fields = ['title', 'description', 'price', 'max_guest']
+        allowed_fields = ['title', 'description', 'price', 'latitude', 'longitude']
         for field in allowed_fields:
             if field in place_data:
                 update_fields[field] = place_data[field]
 
-        new_location = None
-        if 'location_id' in place_data:
-            new_location = facade.get_location(place_data['location_id'])
-            if not new_location:
-                return {'error': 'Location not found'}, 400
-            update_fields['location'] = new_location
-
         if not update_fields:
             return {'error': 'No se proporcionaron datos para actualizar'}, 400
 
-        if new_location and place.location and place in place.location.places:
-            place.location.places.remove(place)
-
         facade.update_place(place_id, update_fields)
-
-        if new_location:
-            new_location.add_place(place)
 
         return {'message': 'Place updated successfully'}, 200
 
@@ -149,13 +130,8 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
 
         current_user_id = get_jwt_identity()
-        if not place.owner or place.owner.id != current_user_id:
+        if place.user_id != current_user_id:
             return {'error': 'Acción no autorizada'}, 403
-
-        if place.owner and place in place.owner.places:
-            place.owner.places.remove(place)
-        if place.location and place in place.location.places:
-            place.location.places.remove(place)
 
         facade.delete_place(place_id)
         return {'message': 'Place deleted successfully'}, 200

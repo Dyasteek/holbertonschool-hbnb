@@ -1,39 +1,37 @@
 from .base_model import BaseModel
+from .. import db, bcrypt
 
 class User(BaseModel):
-    def __init__(self, first_name, last_name, email, password=None, is_admin=False):
-        super().__init__()
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.password_hash = None
-        if password is not None:
-            self.set_password(password)
-        self.is_admin = is_admin
-        self.places = []
-        self.reviews = []
-
+    __tablename__ = 'users'
+    
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    password = db.Column(db.String(128), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    
+    places = db.relationship('Place', backref='owner', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', backref='user', lazy=True, cascade='all, delete-orphan')
+    
+    def __init__(self, **kwargs):
+        password = kwargs.pop('password', None)
+        super().__init__(**kwargs)
+        if password:
+            self.hash_password(password)
+    
+    def hash_password(self, password):
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+    
+    def verify_password(self, password):
+        return bcrypt.check_password_hash(self.password, password)
+    
     def set_password(self, password):
-        from .. import bcrypt
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-
+        self.hash_password(password)
+    
     def check_password(self, password):
-        if not self.password_hash:
-            return False
-        from .. import bcrypt
-        return bcrypt.check_password_hash(self.password_hash, password)
-
-    def add_place(self, place):
-        """Add a place owned by this user"""
-        if place not in self.places:
-            self.places.append(place)
-
-    def get_reviews(self):
-        """Get all reviews written by this user"""
-        return self.reviews
-
+        return self.verify_password(password)
+    
     def to_dict(self):
-        """Convert the instance to a dictionary"""
         base_dict = super().to_dict()
         base_dict.update({
             'first_name': self.first_name,

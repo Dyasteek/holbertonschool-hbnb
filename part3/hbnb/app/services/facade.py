@@ -1,4 +1,8 @@
 from ..persistence.repository import Repository
+from .repositories.user_repository import UserRepository
+from .repositories.place_repository import PlaceRepository
+from .repositories.review_repository import ReviewRepository
+from .repositories.amenity_repository import AmenityRepository
 from ..models.user import User
 from ..models.place import Place
 from ..models.review import Review
@@ -7,10 +11,10 @@ from ..models.location import Location
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = Repository()
-        self.place_repo = Repository()
-        self.review_repo = Repository()
-        self.amenity_repo = Repository()
+        self.user_repo = UserRepository()
+        self.place_repo = PlaceRepository()
+        self.review_repo = ReviewRepository()
+        self.amenity_repo = AmenityRepository()
         self.location_repo = Repository()
 
     # User
@@ -23,18 +27,15 @@ class HBnBFacade:
         return self.user_repo.get(user_id)
 
     def get_user_by_email(self, email):
-        return self.user_repo.get_by_attribute('email', email)
+        return self.user_repo.get_user_by_email(email)
 
     def update_user(self, user_id, user_data):
-        """Update user data"""
         self.user_repo.update(user_id, user_data)
 
     def delete_user(self, user_id):
-        """Delete a user"""
         self.user_repo.delete(user_id)
 
     def get_all_users(self):
-        """Get all users"""
         return self.user_repo.get_all()
 
     # Place
