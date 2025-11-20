@@ -10,8 +10,8 @@ class BaseModel(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def save(self):
-        db.session.commit()
         self.updated_at = datetime.utcnow()
+        db.session.commit()
     
     def delete(self):
         db.session.delete(self)
