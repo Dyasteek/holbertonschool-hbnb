@@ -13,6 +13,7 @@ db = SQLAlchemy()
 
 def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Flask:
     app = Flask(__name__)
+    app.url_map.strict_slashes = False
 
     # Configuration
     if isinstance(config, str):
@@ -32,7 +33,15 @@ def create_app(config: str | type[BaseConfig] | BaseConfig | None = None) -> Fla
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
+    
+    #CORS config
+    cors.init_app(app, resources={
+        r"/api/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     with app.app_context():
         from .models import user, place, review, amenity

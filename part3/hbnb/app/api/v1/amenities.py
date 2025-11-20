@@ -20,9 +20,10 @@ class AmenityList(Resource):
     @api.expect(amenity_model, validate=True)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def post(self):
         """Create a new amenity"""
-        amenity_data = api.payload
+        amenity_data = api.payload or {}
         new_amenity = facade.create_amenity(amenity_data)
         return {'id': new_amenity.id, 
                 'name': new_amenity.name}, 201
@@ -31,6 +32,7 @@ class AmenityList(Resource):
 class AmenityResource(Resource):
     @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
+    @jwt_required()
     def get(self, amenity_id):
         """Get amenity details by ID"""
         amenity = facade.get_amenity(amenity_id)
@@ -42,6 +44,7 @@ class AmenityResource(Resource):
     @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity successfully updated')
     @api.response(404, 'Amenity not found')
+    @jwt_required()
     def put(self, amenity_id):
         """Update amenity details"""
         amenity = facade.get_amenity(amenity_id)
@@ -54,6 +57,7 @@ class AmenityResource(Resource):
 
     @api.response(200, 'Amenity successfully deleted')
     @api.response(404, 'Amenity not found')
+    @jwt_required()
     def delete(self, amenity_id):
         """Delete an amenity"""
         amenity = facade.get_amenity(amenity_id)
