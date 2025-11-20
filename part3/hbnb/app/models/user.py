@@ -21,15 +21,13 @@ class User(BaseModel):
     
     def hash_password(self, password):
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
-    
-    def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password, password)
-    
+
     def set_password(self, password):
         self.hash_password(password)
     
     def check_password(self, password):
-        return self.verify_password(password)
+        return bcrypt.check_password_hash(self.password, password)
+    
     
     def to_dict(self):
         base_dict = super().to_dict()
