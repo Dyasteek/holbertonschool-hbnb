@@ -5,8 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 api = Namespace('amenities', description='Amenity operations')
 
 amenity_model = api.model('Amenity', {
-    'name': fields.String(required=True, description='Name of the amenity'),
-    'description': fields.String(description='Description of the amenity')
+    'name': fields.String(required=True, description='Name of the amenity')
 })
 
 @api.route('/')
@@ -16,8 +15,7 @@ class AmenityList(Resource):
         """Get all amenities"""
         amenities = facade.get_all_amenities()
         return [{'id': amenity.id, 
-                'name': amenity.name, 
-                'description': amenity.description} for amenity in amenities], 200
+                'name': amenity.name} for amenity in amenities], 200
 
     @api.expect(amenity_model, validate=True)
     @api.response(201, 'Amenity successfully created')
@@ -27,8 +25,7 @@ class AmenityList(Resource):
         amenity_data = api.payload
         new_amenity = facade.create_amenity(amenity_data)
         return {'id': new_amenity.id, 
-                'name': new_amenity.name,  
-                'description': new_amenity.description}, 201
+                'name': new_amenity.name}, 201
                 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
@@ -40,8 +37,7 @@ class AmenityResource(Resource):
         if not amenity:
             return {'error': 'Amenity not found'}, 404
         return {'id': amenity.id,  
-                'name': amenity.name, 
-                'description': amenity.description}, 200
+                'name': amenity.name}, 200
 
     @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity successfully updated')

@@ -6,14 +6,12 @@ api = Namespace('reviews', description='Review operations')
 
 # Request models
 review_create_model = api.model('ReviewCreate', {
-    'title': fields.String(required=True, description='Title of the review'),
     'text': fields.String(required=True, description='Text content of the review'),
     'rating': fields.Integer(required=True, description='Rating from 1 to 5'),
     'place_id': fields.String(required=True, description='ID of the place being reviewed')
 })
 
 review_update_model = api.model('ReviewUpdate', {
-    'title': fields.String(required=False, description='Title of the review'),
     'text': fields.String(required=False, description='Text content of the review'),
     'rating': fields.Integer(required=False, description='Rating from 1 to 5')
 })
@@ -25,11 +23,10 @@ class ReviewList(Resource):
         """Get all reviews"""
         reviews = facade.get_all_reviews()
         return [{'id': review.id, 
-                'title': review.title, 
                 'text': review.text, 
-                'rating': review.rating, 
-                'place_id': review.place.id if review.place else None, 
-                'user_id': review.user.id if review.user else None} for review in reviews], 200
+                'rating': review.rating,
+                'place_id': review.place_id,
+                'user_id': review.user_id} for review in reviews], 200
 
     @api.expect(review_create_model, validate=True)
     @api.response(201, 'Review successfully created')
@@ -38,53 +35,41 @@ class ReviewList(Resource):
     def post(self):
         """Create a new review"""
         review_data = api.payload or {}
+        current_user_id = get_jwt_identity()
 
-        required_fields = ['title', 'text', 'rating', 'place_id']
+        required_fields = ['text', 'rating', 'place_id']
         missing_fields = [field for field in required_fields if field not in review_data]
         if missing_fields:
             return {'error': 'Datos incompletos'}, 400
-
-        current_user_id = get_jwt_identity()
-        user = facade.get_user(current_user_id)
-        if not user:
-            return {'error': 'User not found'}, 404
 
         place = facade.get_place(review_data['place_id'])
         if not place:
             return {'error': 'Place not found'}, 400
 
-        if place.owner and place.owner.id == current_user_id:
-            return {'error': 'No puedes revisar tu propio lugar'}, 400
+        user = facade.get_user(current_user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
 
-        existing_reviews = [
-            review for review in facade.get_all_reviews()
-            if review.place and review.place.id == place.id
-            and review.user and review.user.id == current_user_id
-        ]
-        if existing_reviews:
-            return {'error': 'Ya has reseñado este lugar'}, 400
+        if place.user_id == current_user_id:
+            return {'error': 'No puedes revisar tu propio lugar'}, 400
 
         if not (1 <= review_data['rating'] <= 5):
             return {'error': 'Rating must be between 1 and 5'}, 400
 
         review_obj_data = {
-            'title': review_data['title'],
             'text': review_data['text'],
             'rating': review_data['rating'],
-            'place': place,
-            'user': user
+            'place_id': review_data['place_id'],
+            'user_id': current_user_id
         }
 
         new_review = facade.create_review(review_obj_data)
-        place.add_review(new_review)
-        user.reviews.append(new_review)
 
         return {'id': new_review.id, 
-                'title': new_review.title, 
                 'text': new_review.text, 
-                'rating': new_review.rating, 
-                'place_id': new_review.place.id if new_review.place else None, 
-                'user_id': new_review.user.id if new_review.user else None}, 201
+                'rating': new_review.rating,
+                'place_id': new_review.place_id,
+                'user_id': new_review.user_id}, 201
 
 @api.route('/<review_id>')
 class ReviewResource(Resource):
@@ -96,11 +81,10 @@ class ReviewResource(Resource):
         if not review:
             return {'error': 'Review not found'}, 404
         return {'id': review.id, 
-                'title': review.title, 
                 'text': review.text, 
-                'rating': review.rating, 
-                'place_id': review.place.id if review.place else None, 
-                'user_id': review.user.id if review.user else None}, 200
+                'rating': review.rating,
+                'place_id': review.place_id,
+                'user_id': review.user_id}, 200
 
     @api.expect(review_update_model, validate=True)
     @api.response(200, 'Review successfully updated')
@@ -114,13 +98,13 @@ class ReviewResource(Resource):
             return {'error': 'Review not found'}, 404
 
         current_user_id = get_jwt_identity()
-        if not review.user or review.user.id != current_user_id:
+        if review.user_id != current_user_id:
             return {'error': 'Acción no autorizada'}, 403
 
         review_data = api.payload or {}
 
         update_fields = {}
-        allowed_fields = ['title', 'text', 'rating']
+        allowed_fields = ['text', 'rating']
         for field in allowed_fields:
             if field in review_data:
                 update_fields[field] = review_data[field]
@@ -145,13 +129,8 @@ class ReviewResource(Resource):
             return {'error': 'Review not found'}, 404
 
         current_user_id = get_jwt_identity()
-        if not review.user or review.user.id != current_user_id:
+        if review.user_id != current_user_id:
             return {'error': 'Acción no autorizada'}, 403
-
-        if review.user and review in review.user.reviews:
-            review.user.reviews.remove(review)
-        if review.place and review in review.place.reviews:
-            review.place.reviews.remove(review)
 
         facade.delete_review(review_id)
         return {'message': 'Review deleted successfully'}, 200

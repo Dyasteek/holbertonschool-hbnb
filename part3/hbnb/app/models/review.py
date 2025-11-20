@@ -1,22 +1,20 @@
 from .base_model import BaseModel
+from .. import db
 
 class Review(BaseModel):
-    def __init__(self, title, text, rating, place, user):
-        super().__init__()
-        self.title = title
-        self.text = text
-        self.rating = rating
-        self.place = place
-        self.user = user
-
+    __tablename__ = 'reviews'
+    
+    text = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    place_id = db.Column(db.String(36), db.ForeignKey('places.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
     def to_dict(self):
-        """Convert the instance to a dictionary"""
         base_dict = super().to_dict()
         base_dict.update({
-            'title': self.title,
             'text': self.text,
             'rating': self.rating,
-            'place_id': self.place.id if self.place else None,
-            'user_id': self.user.id if self.user else None
+            'place_id': self.place_id,
+            'user_id': self.user_id
         })
         return base_dict

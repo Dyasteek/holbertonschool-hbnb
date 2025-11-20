@@ -1,44 +1,29 @@
 from .base_model import BaseModel
+from .. import db
+from .place_amenity import place_amenity
 
 class Place(BaseModel):
-    def __init__(self, title, description, price, max_guest, location, owner):
-        super().__init__()
-        self.title = title
-        self.description = description
-        self.price = price
-        self.max_guest = max_guest
-        self.location = location
-        self.owner = owner
-        self.amenities = []
-        self.reviews = []
-
-    def add_amenity(self, amenity):
-        """Add an amenity to the place"""
-        if amenity not in self.amenities:
-            self.amenities.append(amenity)
-
-    def add_review(self, review):
-        """Add a review to the place"""
-        if review not in self.reviews:
-            self.reviews.append(review)
-
-    def get_amenities(self):
-        """Get all amenities of the place"""
-        return self.amenities
-
-    def get_reviews(self):
-        """Get all reviews of the place"""
-        return self.reviews
-
+    __tablename__ = 'places'
+    
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    
+    reviews = db.relationship('Review', backref='place', lazy=True, cascade='all, delete-orphan')
+    amenities = db.relationship('Amenity', secondary=place_amenity, lazy='subquery', 
+                                backref=db.backref('places', lazy=True))
+    
     def to_dict(self):
-        """Convert the instance to a dictionary"""
         base_dict = super().to_dict()
         base_dict.update({
             'title': self.title,
             'description': self.description,
             'price': self.price,
-            'max_guest': self.max_guest,
-            'location_id': self.location.id if self.location else None,
-            'owner_id': self.owner.id if self.owner else None
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'user_id': self.user_id
         })
         return base_dict
